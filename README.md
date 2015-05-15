@@ -13,7 +13,7 @@ Add it to your project.clj file:
 ````
 
 A simple usage example can be found in the ws/demo.clj, viewable at
-http://viewer.gorilla-repl.org/view.html?source=github&user=JonyEpsilon&repo=darwin&filename=ws/demo.clj
+http://viewer.gorilla-repl.org/view.html?source=github&user=JonyEpsilon&repo=darwin&path=ws/demo.clj
 
 ## License
 
