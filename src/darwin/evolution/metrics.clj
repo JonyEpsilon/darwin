@@ -5,7 +5,7 @@
 ;
 ; Contributors: Jony Hudson
 ;
-; Not for distribution.
+; Released under the MIT license..
 ;
 
 (ns darwin.evolution.metrics
