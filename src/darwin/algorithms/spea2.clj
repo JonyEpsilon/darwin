@@ -56,8 +56,10 @@
 
 (defn coords-from-individual
   "Get the individuals coordinates in objective space as a vector."
-  [[k1 k2] i]
-  [(k1 i) (k2 i)])
+  [ks i]
+  (mapv (fn [k]
+          (k i))
+        ks))
 
 (defn- calculate-density
   [distance]
@@ -72,15 +74,15 @@
   "Calculate the 'densities' for each individual in a population. The density is defined as 1 / (distance to
   kth-nearest neighbour + 2). k is taken as the sqrt of the population size. Assocs the densities into the
   individuals."
-  [[k1 k2] population]
+  [ks population]
   (let [k (Math/sqrt (count population))
         ;; we extract the coordinates of each individual in objective space and build a kd-tree from them
         ;; so we can efficiently find the nearest neighbours.
-        coords (map (partial coords-from-individual [k1 k2]) population)
+        coords (map (partial coords-from-individual ks) population)
         tree (kdtree/build-tree coords)]
     (map #(assoc % :spea2-density
-                   (calculate-density
-                     (kth-nearest-distance tree k (coords-from-individual [k1 k2] %))))
+                 (calculate-density
+                  (kth-nearest-distance tree k (coords-from-individual ks %))))
          population)))
 
 (defn calculate-fitnesses
@@ -108,7 +110,7 @@
   (let [tree (:tree tree-and-archive)
         oversized-archive (:archive tree-and-archive)
         measured-archive (map #(assoc % :spea2-distances
-                                        (k-nearest-distances tree comparison-depth (coords-from-individual goals %)))
+                                      (k-nearest-distances tree comparison-depth (coords-from-individual goals %)))
                               oversized-archive)
         ;; this next step relies on the sort being done lexicographically on the distance arrays.
         ;; That `sort-by` does this isn't mentioned in the docstring, but is explicitly stated
@@ -134,8 +136,8 @@
   (let [coords (map (partial coords-from-individual goals) oversized-archive)
         tree (kdtree/build-tree coords)
         thinned-tree-and-archive (nth (iterate
-                                        (partial remove-one-item goals comparison-depth)
-                                        {:tree tree :archive oversized-archive})
+                                       (partial remove-one-item goals comparison-depth)
+                                       {:tree tree :archive oversized-archive})
                                       (- (count oversized-archive) target-size))]
     (:archive thinned-tree-and-archive)))
 
@@ -202,7 +204,7 @@
          :or   {comparison-depth 5
                 deduplicate false}} config]
     {:elite-selector       (fn [rabble elite]
-                               (make-new-archive goals deduplicate comparison-depth archive-size rabble elite))
+                             (make-new-archive goals deduplicate comparison-depth archive-size rabble elite))
      :mating-pool-selector (fn [_ elite] elite)
      :reproduction-config  {:selector   (partial selection/tournament-selector 2 :spea2-fitness)
                             :unary-ops  unary-ops
